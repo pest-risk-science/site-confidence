@@ -18,3 +18,4 @@ load_my_packages()
 ############
 # Analysis #
 ############
+sim_capture(ntraps = 10)

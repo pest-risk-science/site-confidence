@@ -20,7 +20,7 @@ load_my_packages <- function() {
 
   # Installing Packages from Github
   if(!("trapDetect" %in% my_installed_packages)) {
-    devtools::install_github("pest-risk-science/trapDetect")
+    devtools::install_github("dangladish/trapDetect")
   }
 
   # Installing Packages from CRAN
