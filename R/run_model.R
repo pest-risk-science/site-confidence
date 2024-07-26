@@ -8,7 +8,8 @@
 run_model <- function(num_seed,
                       num_trap,
                       lure_att,
-                      step_size){
+                      step_size,
+                      g_0){
 
   run_time <- 28
   time_int_check <- 7
@@ -18,7 +19,8 @@ run_model <- function(num_seed,
                           lam = 1/lure_att,
                           step_size_ad = step_size,
                           bbox = c(0,0,316.2278,316.2278),
-                          Time = run_time)
+                          Time = run_time,
+                          g0 = g_0)
 
   total_cap <- this_sim$total_captured
   if(length(total_cap) < run_time + 1) {
@@ -38,15 +40,14 @@ run_model <- function(num_seed,
 #' Replicate the model run
 #'
 #' @description
-#' Wrapper function to replcate `run_model()`
+#' Wrapper function to replicate `run_model()`
 #'
 #'
 replicate_model_run <- function(num_replic = num_replicates,
                                 HPC_run = hpc_run,
                                 HPC_ind = hpc_ind,
                                 Scenario_ind = scenario_ind,
-                                Scenarios = scenarios,
-                                n_pests = num_pests) {
+                                Scenarios = scenarios) {
 
   if(HPC_run) {
     this_scenario_ind <- HPC_ind
@@ -57,35 +58,29 @@ replicate_model_run <- function(num_replic = num_replicates,
   this_trap <- Scenarios$n_traps[this_scenario_ind]
   this_step_size <- Scenarios$step_size[this_scenario_ind]
   this_lure <- Scenarios$lure_attract[this_scenario_ind]
+  this_g0 <- Scenarios$g0[this_scenario_ind]
+  this_num_pests <- Scenarios$num_pests[this_scenario_ind]
 
-  for(pest_ind in 1:length(n_pests)) {
-    this_num_pests <- n_pests[pest_ind]
-    model_repped <- replicate(num_replic,
-                              run_model(num_seed = this_num_pests,
-                                        num_trap = this_trap,
-                                        lure_att = this_lure,
-                                        step_size = this_step_size)
-    )
-    if(pest_ind == 1) {
-      return_df <- t(model_repped)
-      num_times <- ncol(return_df)
+  model_repped <- replicate(num_replic,
+                            run_model(num_seed = this_num_pests,
+                                      num_trap = this_trap,
+                                      lure_att = this_lure,
+                                      step_size = this_step_size,
+                                      g_0 = this_g0)
+  )
 
-    } else {
-      return_df <- rbind(return_df,t(model_repped))
-    }
-  }
+  return_df <- t(model_repped)
+  num_times <- ncol(return_df)
 
   return_df <- as.data.frame(return_df)
   names(return_df) <- paste0("time",1:num_times)
 
-  rep_pests <- rep(n_pests,each=num_replic)
-
-  return_df$num_pests <- rep_pests
+  return_df$num_pests <- this_num_pests
   return_df$n_traps <- this_trap
   return_df$step_size <- this_step_size
   return_df$lure_attract <- this_lure
-  return_df$replication <- rep(1:num_replic, length(n_pests))
-
+  return_df$g0 <- this_g0
+  return_df$replication <- 1:num_replic
   return_df
 
 }

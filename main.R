@@ -8,7 +8,8 @@ hpc_ind <- as.numeric(commandArgs(trailingOnly = TRUE))
 root_dir <- getwd()
 func_dir <- file.path(root_dir, "R")
 data_dir <- file.path(root_dir, "data")
-result_dirs <- file.path(root_dir, "results")
+results_dir <- file.path(root_dir, "results")
+plot_dir <- file.path(root_dir, "plots")
 
 # Load Functions
 invisible(sapply(list.files(func_dir, "\\.[Rr]$", full.names = TRUE),
@@ -25,20 +26,17 @@ load_my_packages()
 generate_new_scenarios <- FALSE
 write_new_scenarios <- FALSE
 hpc_run <- TRUE
-num_replicates <- 500
+num_replicates <- 300
 scenario_ind <- 1
-
-# Num pests
-num_pests <- c(1, 5, 10, 20, 25, seq(50,1000,by=25))
 
 # Scenarios
 if(generate_new_scenarios) {
   scenarios <- generate_scenarios()
 }
 if(write_new_scenarios) {
-  write.csv2(scenarios,file.path(data_dir,"scenarios.csv"))
+  write.csv(scenarios,file.path(data_dir,"scenarios.csv"))
 } else {
-  scenarios <- read.csv2(file.path(data_dir,"scenarios.csv"))
+  scenarios <- read.csv(file.path(data_dir,"scenarios.csv"))
 }
 
 # Run the model
@@ -50,8 +48,8 @@ if(hpc_run) {file_ind <- hpc_ind}
 file_name <- paste0("traps_", scenarios$n_traps[file_ind],
                     "_step_", scenarios$step_size[file_ind],
                     "_lure_", scenarios$lure_attract[file_ind],
+                    "_g0_", scenarios$g0[file_ind],
+                    "_npests_", scenarios$num_pests[file_ind],
                     ".csv")
-write.csv2(model_run_df,file.path(results_dir,file_name))
-
-
+write.csv(model_run_df,file.path(results_dir,file_name))
 
