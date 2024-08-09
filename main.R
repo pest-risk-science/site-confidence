@@ -53,3 +53,8 @@ file_name <- paste0("traps_", scenarios$n_traps[file_ind],
                     ".csv")
 write.csv(model_run_df,file.path(results_dir,file_name))
 
+
+###########
+# Results #
+###########
+
