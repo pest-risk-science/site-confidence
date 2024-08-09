@@ -4,7 +4,14 @@
 #' @description
 #' This function runs a specific scenario
 #'
-
+#' @param num_seed description
+#' @param num_trap description
+#' @param lure_att description
+#' @param step_size description
+#' @param g_0 description
+#'
+#' @return Nothing
+#' @export
 run_model <- function(num_seed,
                       num_trap,
                       lure_att,
@@ -42,7 +49,14 @@ run_model <- function(num_seed,
 #' @description
 #' Wrapper function to replicate `run_model()`
 #'
+#' @param num_replic description
+#' @param HPC_run description
+#' @param HPC_ind description
+#' @param Scenario_ind description
+#' @param Scenarios description
 #'
+#' @return Nothing
+#' @export
 replicate_model_run <- function(num_replic = num_replicates,
                                 HPC_run = hpc_run,
                                 HPC_ind = hpc_ind,
