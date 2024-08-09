@@ -1,3 +1,4 @@
+
 #' Create results data frame
 #'
 #' @description
@@ -7,6 +8,7 @@
 #'
 #' @return Nothing
 #' @export
+
 get_results_df <- function(res_dir = results_dir) {
   res_files <- list.files(res_dir, pattern=".csv",full.names = TRUE)
   results_df <- do.call(rbind,lapply(res_files,read.csv))
