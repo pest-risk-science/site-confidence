@@ -34,9 +34,9 @@ if(generate_new_scenarios) {
   scenarios <- generate_scenarios()
 }
 if(write_new_scenarios) {
-  write.csv(scenarios,file.path(data_dir,"scenarios.csv"))
+  write.csv(scenarios,file.path(data_dir, "scenarios.csv"))
 } else {
-  scenarios <- read.csv(file.path(data_dir,"scenarios.csv"))
+  scenarios <- read.csv(file.path(data_dir, "scenarios.csv"))
 }
 
 # Run the model
@@ -51,7 +51,7 @@ file_name <- paste0("traps_", scenarios$n_traps[file_ind],
                     "_g0_", scenarios$g0[file_ind],
                     "_npests_", scenarios$num_pests[file_ind],
                     ".csv")
-write.csv(model_run_df,file.path(results_dir,file_name))
+write.csv(model_run_df, file.path(results_dir,file_name))
 
 
 ###########

@@ -8,7 +8,6 @@
 #'
 #' @return Nothing
 #' @export
-
 get_results_df <- function(res_dir = results_dir) {
   res_files <- list.files(res_dir, pattern=".csv",full.names = TRUE)
   results_df <- do.call(rbind,lapply(res_files,read.csv))
@@ -18,6 +17,7 @@ get_results_df <- function(res_dir = results_dir) {
 
   results_df[,keep_nms]
 }
+
 
 #' Get flies per trap per week
 #'
@@ -45,3 +45,15 @@ get_ftw <- function(results_df) {
 }
 
 
+#' Bin flies per trap per week
+#'
+#' @description
+#' Puts flies per trap per week into categories
+#'
+#' @param results_df description
+#'
+#' @return Nothing
+#' @export
+bin_ftw <- function(results_df) {
+
+}
