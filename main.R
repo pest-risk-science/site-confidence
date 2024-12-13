@@ -26,7 +26,7 @@ load_my_packages()
 generate_new_scenarios <- FALSE
 write_new_scenarios <- FALSE
 hpc_run <- TRUE
-num_replicates <- 300
+num_replicates <- 500
 scenario_ind <- 1
 
 # Scenarios
@@ -48,7 +48,8 @@ if(hpc_run) {file_ind <- hpc_ind}
 file_name <- paste0("traps_", scenarios$n_traps[file_ind],
                     "_step_", scenarios$step_size[file_ind],
                     "_lure_", scenarios$lure_attract[file_ind],
-                    "_g0_", scenarios$g0[file_ind],
+                    #"_g0_", scenarios$g0[file_ind],
+                    "_spot_", scenarios$same_spot[file_ind],
                     "_npests_", scenarios$num_pests[file_ind],
                     ".csv")
 write.csv(model_run_df, file.path(results_dir,file_name))
