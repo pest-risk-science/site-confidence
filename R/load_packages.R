@@ -13,7 +13,8 @@
 load_my_packages <- function() {
 
   # Packages to load
-  pkg_list <- c("sf","trapDetect", "ggplot2", "dplyr", "raster")
+  pkg_list <- c("sf","trapDetect", "ggplot2", "dplyr", "raster",
+                "spatstat.random", "spatstat.geom")
 
   # Packages already installed
   my_installed_packages <- installed.packages()[,1]

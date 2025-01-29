@@ -113,7 +113,7 @@ zero_run <- function(results_df, scenarios_df) {
                         replication = 1:num_rep)
 
   scenarios_df_sub <- scenarios_df %>%
-    select(!c(num_pests,X))
+    dplyr::select(!c(num_pests,X))
   scenarios_df_sub <- unique(scenarios_df_sub)
   scenarios_df_sub$num_pests <- 0
 
