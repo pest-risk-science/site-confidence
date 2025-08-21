@@ -85,28 +85,3 @@ simulate_clustered_poisson <- function(total_points, lambda_parent,
   stop("Failed to simulate the process after ", max_retries, " attempts.")
 }
 
-
-
-
-
-
-
-
-# Parameters
-total_points <- 500    # Total number of points
-lambda_parent <- 3          # Intensity of parent points
-cluster_radius <- 0.05        # Radius of clusters
-
-# Simulate the process
-# For reproducibility
-simulated_process <- simulate_clustered_poisson(total_points, lambda_parent, cluster_radius)
-
-# Plot the result
-plot(simulated_process, main = "Clustered Poisson Point Process")
-
-
-
-length(simulated_process$x)
-
-tmp_k <- kmeans(data.frame(x=simulated_process$x,y=simulated_process$y),centers = lambda_parent)
-table(tmp_k$cluster)
