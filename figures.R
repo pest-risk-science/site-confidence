@@ -128,24 +128,25 @@ ss_1 <- step_size_df %>%
   scale_fill_bright() +
   xlab("True pest prevalence (pests per hectare)") +
   ylab("Trap catch (P/T/W)") +
-  labs(fill = "Step size (m)", color = "Step size ") +
+  labs(fill = "Step size (m)", color = "Step size (m)") +
   theme_bw() +
-  ggtitle("(a)")
+  ggtitle("(b)")
 
 ss_2 <- step_size_df %>%
+  filter(ftw1 <= 100) %>%
   mutate(cat_ftw1 = factor(cat_ftw1,
                            levels=c("negligible", "very low", "low", "moderate", "high")),
          step_size = as.factor(step_size)) %>%
-  ggplot(aes(y=cat_ftw1)) +
+  ggplot(aes(x=cat_ftw1)) +
   #geom_density_ridges(aes(x=num_pests, fill = step_size),alpha=.5) +
-  geom_boxplot(aes(x=pests_per_ha, fill = step_size)) +
+  geom_boxplot(aes(y=pests_per_ha, fill = step_size), outlier.alpha = 0.01, outlier.size = 0.8) +
   scale_color_bright()+
   scale_fill_bright() +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   theme_bw() +
   labs(fill = "Step size (m)") +
-  ggtitle("(b)")
+  ggtitle("(a)")
 
 ss_3 <- step_size_df_clust %>%
   summarise(ftw1_mn = mean(ftw1),
@@ -164,24 +165,25 @@ ss_3 <- step_size_df_clust %>%
   labs(fill = "Step size (m)", color = "Step size (m)") +
   theme_bw() +
   ggtitle("Clustered Case") +
-  ggtitle("(c)")
+  ggtitle("(d)")
 
 ss_4 <- step_size_df_clust %>%
+  filter(ftw1 <= 100) %>%
   mutate(cat_ftw1 = factor(cat_ftw1,
                            levels=c("negligible", "very low", "low", "moderate", "high")),
          step_size = factor(step_size,levels=c(3,7,20))) %>%
-  ggplot(aes(y=cat_ftw1)) +
+  ggplot(aes(x=cat_ftw1)) +
   #geom_density_ridges(aes(x=num_pests, fill = step_size),alpha=.5) +
-  geom_boxplot(aes(x=pests_per_ha, fill = step_size)) +
+  geom_boxplot(aes(y=pests_per_ha, fill = step_size), outlier.alpha = 0.01, outlier.size = 0.8) +
   scale_color_bright()+
   scale_fill_bright() +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   theme_bw() +
   labs(fill = "Step size (m)") +
-  ggtitle("(d)")
+  ggtitle("(c)")
 
-ggarrange(ss_1,ss_2,ss_3,ss_4,nrow=2,ncol=2)
+ggarrange(ss_2,ss_1,ss_4,ss_3,nrow=2,ncol=2)
 ggsave(filename = file.path(figures_dir, "step_size_plot.png"), width = 10, height = 8)
 
 
@@ -240,19 +242,20 @@ t2 <- trap_df %>%
   theme(legend.position = "bottom")
 
 t3 <- trap_df %>%
+  filter(ftw1 <= 100) %>%
   mutate(cat_ftw1 = factor(cat_ftw1,
                            levels=c("negligible", "very low", "low", "moderate", "high"))) %>%
   mutate(cat_ftw1 = replace(cat_ftw1, cat_ftw1=="very low","low")) %>%
   mutate(n_traps = as.factor(n_traps)) %>%
   mutate(lure_attract = as.factor(lure_attract)) %>%
-  ggplot(aes(y=cat_ftw1, x=pests_per_ha, fill=lure_attract)) +
-  geom_boxplot() +
+  ggplot(aes(x=cat_ftw1, y=pests_per_ha, fill=lure_attract)) +
+  geom_boxplot(outlier.alpha = .01, outlier.size = .8) +
   #geom_boxplot(outlier.shape = NA) +
   scale_color_bright()+
   scale_fill_bright() +
   facet_grid(~n_traps, labeller = labeller(n_traps = trap_labs)) +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   labs(fill = "Lure attractiveness (\u03bb)") +
   theme_bw() +
   theme(legend.position = "bottom")
@@ -421,6 +424,7 @@ c1 <- res_df_clust %>%
   theme(legend.position = "bottom")
 
 c2 <- res_df_clust %>%
+  filter(ftw1 <= 100) %>%
   filter(step_size==3, lure_attract==14) %>%
   filter(num_clust%in%c(1,3,5)) %>%
   mutate(pests_per_ha = num_pests/10) %>%
@@ -430,14 +434,14 @@ c2 <- res_df_clust %>%
   mutate(n_traps = as.factor(n_traps),
          lure_attract = as.factor(lure_attract),
          num_clust = as.factor(num_clust)) %>%
-  ggplot(aes(y=cat_ftw1, x=pests_per_ha, fill=num_clust)) +
-  geom_boxplot() +
+  ggplot(aes(x=cat_ftw1, y=pests_per_ha, fill=num_clust)) +
+  geom_boxplot(outlier.alpha = .01, outlier.size = .8) +
   #geom_boxplot(outlier.shape = NA) +
   facet_grid(~n_traps, labeller = labeller(n_traps = trap_labs))  +
   scale_color_bright()+
   scale_fill_bright() +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   labs(fill = "Number of pest clusters") +
   theme_bw() +
   theme(legend.position = "bottom")
@@ -461,13 +465,14 @@ c1_append <- res_df_clust %>%
                                                        lure_attract=lure_labs)) +
   scale_color_bright()+
   scale_fill_bright() +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   labs(fill = "Number of pest clusters", color = "Number of pest clusters") +
   theme_bw() +
   theme(legend.position = "bottom")
 
 c2_append <- res_df_clust %>%
+  filter(ftw1 <= 100) %>%
   filter(step_size==3) %>%
   mutate(pests_per_ha = num_pests/10) %>%
   mutate(cat_ftw1 = factor(cat_ftw1,
@@ -476,15 +481,15 @@ c2_append <- res_df_clust %>%
   mutate(n_traps = as.factor(n_traps),
          lure_attract = as.factor(lure_attract),
          num_clust = as.factor(num_clust)) %>%
-  ggplot(aes(y=cat_ftw1, x=pests_per_ha, fill=num_clust)) +
-  geom_boxplot() +
+  ggplot(aes(x=cat_ftw1, y=pests_per_ha, fill=num_clust)) +
+  geom_boxplot(outlier.alpha = .01, outlier.size = .8) +
   scale_color_bright()+
   scale_fill_bright() +
   #geom_boxplot(outlier.shape = NA) +
   facet_grid(lure_attract~n_traps, labeller = labeller(n_traps = trap_labs,
                                                        lure_attract=lure_labs)) +
-  xlab("True pest prevalence (pests per hectare)") +
-  ylab("Trap catch (P/T/W)") +
+  ylab("True pest prevalence (pests per hectare)") +
+  xlab("Trap catch (P/T/W)") +
   labs(fill = "Number of clusters") +
   theme_bw() +
   theme(legend.position = "bottom")
