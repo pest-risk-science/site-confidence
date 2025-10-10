@@ -21,7 +21,7 @@ shiny_app_df <- open_dataset("shiny_app_df.parquet")
 source("ui_funcs.R", local = TRUE)
 
 ui <- fluidPage(
-  #tags$head(includeHTML("google-analytics.html")),
+  tags$head(includeHTML("google-analytics.html")),
   navbarPage(
     title = "Site_Confidence",
     theme = shinytheme("flatly"),

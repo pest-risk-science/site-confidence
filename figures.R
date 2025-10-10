@@ -513,6 +513,34 @@ ggsave(filename = file.path(figures_dir, "clust2_append_plot.png"), width = 11, 
 
 
 
+ggpubr::ggarrange(t1,c1,nrow=2, labels = c("(a)","(b)"))
+ggsave(filename = file.path(figures_dir, "line_plots.png"), width = 11, height = 7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###
