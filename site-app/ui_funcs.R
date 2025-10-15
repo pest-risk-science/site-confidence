@@ -40,7 +40,7 @@ view_plot_page <- function() {
                    step = 0.1)
     ),
     mainPanel(
-      plotOutput("plot"),
+      plotOutput("plot", height = "600px"),
       DTOutput("values_table")
     )
   )

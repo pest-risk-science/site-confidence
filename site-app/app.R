@@ -10,7 +10,9 @@ library(ggplot2)
 library(dplyr)
 library(DT)
 library(arrow)
-library(gridExtra)  # For arranging plots
+library(gridExtra)
+library(khroma)
+library(ggtext)
 
 # Load Arrow dataset
 shiny_app_df <- open_dataset("shiny_app_df.parquet")
@@ -88,8 +90,14 @@ server <- function(input, output, session) {
       mutate(
         pests_per_ha = num_pests / 10,
         cat_ftw1 = ifelse(cat_ftw1 == "very low", "low", cat_ftw1),
-        cat_ftw1 = factor(cat_ftw1, levels = c("high", "moderate", "low", "negligible"))
-      )
+        cat_ftw1 = factor(cat_ftw1, levels = c("negligible", "low", "moderate", "high"))
+      ) %>%
+      mutate(cat_ftw1 = recode(cat_ftw1,
+        negligible = "Negligible",
+        low = "Low",
+        moderate = "Moderate",
+        high = "High"
+      ))
   }) %>%
     bindCache(input$num_traps, input$lure_attract, input$step_size, input$spatial, input$num_clust)
 
@@ -114,20 +122,31 @@ server <- function(input, output, session) {
       ggplot(aes(x = pests_per_ha, y = ftw1_mn)) +
       geom_line(size = 2) +
       geom_ribbon(aes(ymin = ftw1_lb, ymax = ftw1_ub), alpha = 0.2) +
-      xlab("True pest prevalence (pests per hectare)") +
-      ylab("Trap catch (P/T/W)") +
-      theme_bw()
+      labs(x = "True pest prevalence<br><span style='font-size:16pt;'>(pests/ha)</span>",
+           y = "Trap Catch (PTW)") +
+      theme_bw() +
+      theme(text=element_text(size=20),
+            axis.title.x = element_markdown(),
+            axis.title.y = element_markdown())
 
     # Boxplot
     p2 <- p_df %>%
-      ggplot(aes(y = cat_ftw1, x = pests_per_ha, fill = cat_ftw1)) +
-      geom_boxplot() +
-      xlab("True pest prevalence (pests per hectare)") +
-      ylab("Trap catch (P/T/W)") +
-      theme_bw()
+      ggplot(aes(x = cat_ftw1, y = pests_per_ha, fill = cat_ftw1)) +
+      geom_boxplot(outlier.alpha = .01, outlier.size = 1) +
+      scale_color_bright()+
+      scale_fill_bright() +
+      labs(y = "True pest prevalence<br><span style='font-size:16pt;'>(pests/ha)</span>",
+           x = "Trap Catch (PTW)") +
+      theme_bw() +
+      theme(text=element_text(size=20),
+            axis.title.x = element_markdown(),
+            axis.title.y = element_markdown(),
+            legend.position = "none") +
+      labs(fill = "Threshold")
+
 
     # Arrange plots side by side
-    gridExtra::grid.arrange(p1, p2, nrow = 1)
+    gridExtra::grid.arrange(p2, p1, nrow = 2)
   })
 
   # ---- Table ----
