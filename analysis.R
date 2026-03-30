@@ -1,3 +1,9 @@
+### Author: D. Gladish
+### Note: This script incorporates the simulation results of main.R (run that
+### first) and aggregates into tables, preparing to plot into figures through
+### figures.R
+
+
 
 ############
 # Preamble #
@@ -187,30 +193,8 @@ if(valid_run){
                               step_size = c(62.6, 42.9, 50))
   meta_df <- merge(meta_df, step_size_map)
 
-  # As my paper function
+  # capture function
   run_sim_cap <- function(dat, grid75 = grid_75, grid100 = grid_100,
-                          grid150 = grid_150, g_0 = 1) {
-
-    if(dat$grid_d == 75){this_grid <- grid75}
-    if(dat$grid_d == 100){this_grid <- grid100}
-    if(dat$grid_d == 150){this_grid <- grid150}
-
-    this_sim <- sim_capture(init_dat = this_grid$init_dat,
-                            surv_loc = this_grid$surv_loc,
-                            bbox = this_grid$bbox,
-                            Time = 2,
-                            g0 = g_0,
-                            step_size_ad = dat$step_size,
-                            lam = 1/dat$lam,
-                            random_length = TRUE)
-
-    return_val <- this_sim$total_captured[3]/2000
-    return_val
-  }
-
-
-  # capture one function
-  run_sim_cap2 <- function(dat, grid75 = grid_75, grid100 = grid_100,
                            grid150 = grid_150, g_0 = 1,
                            day_cap = 2) {
 
@@ -245,40 +229,24 @@ if(valid_run){
   num_rep <- 50
 
   sim_prop_res <- matrix(NA, nrow(meta_df), num_rep)
-  sim_prop_res2 <- matrix(NA, nrow(meta_df), num_rep)
 
   for(ind in 1:nrow(meta_df)) {
     cat("***iteration", ind, "\n")
     sim_prop_res[ind,] <- replicate(num_rep, run_sim_cap(meta_df[ind,]))
   }
 
-  for(ind in 1:nrow(meta_df)) {
-    cat("***iteration", ind, "\n")
-    sim_prop_res2[ind,] <- replicate(num_rep, run_sim_cap2(meta_df[ind,]))
-  }
 
   meta_df$p_hat <- apply(sim_prop_res,1,mean)
   meta_df$p_lb <- apply(sim_prop_res,1,quantile,.025)
   meta_df$p_ub <- apply(sim_prop_res,1,quantile,.975)
 
 
-  meta_df2 <- meta_df
-  meta_df2$p_hat <- apply(sim_prop_res2,1,mean)
-  meta_df2$p_lb <- apply(sim_prop_res2,1,quantile,.025)
-  meta_df2$p_ub <- apply(sim_prop_res2,1,quantile,.975)
-
   saveRDS(sim_prop_res,file = file.path(data_dir, "sim_prop_res.rds"))
   saveRDS(meta_df, file = file.path(data_dir, "meta_df.rds"))
-
-  saveRDS(sim_prop_res2,file = file.path(data_dir, "sim_prop_res2.rds"))
-  saveRDS(meta_df2, file = file.path(data_dir, "meta_df2.rds"))
 
 } else {
   sim_prop_res <- readRDS(file.path(data_dir, "sim_prop_res.rds"))
   meta_df <- readRDS(file.path(data_dir, "meta_df.rds"))
-
-  sim_prop_res2 <- readRDS(file.path(data_dir, "sim_prop_res2.rds"))
-  meta_df2 <- readRDS(file.path(data_dir, "meta_df2.rds"))
 }
 
 
@@ -294,7 +262,7 @@ sum_df <- res_df %>%
   summarise(pests_mn = mean(num_pests),
             pests_95 = quantile(num_pests,.95),
             pests_99 = quantile(num_pests,.99),
-            .by = c(n_traps,step_size,lure_attract,same_spot,cat_ftw1))
+            .by = c(n_traps,step_size,lure_attract,cat_ftw1))
 
 
 sum_df_clust <- res_df_clust %>%
@@ -306,15 +274,15 @@ sum_df_clust <- res_df_clust %>%
 
 
 sum_df_mn <- sum_df %>%
-  dplyr::select(n_traps,step_size,lure_attract,same_spot,cat_ftw1,pests_mn) %>%
+  dplyr::select(n_traps,step_size,lure_attract,cat_ftw1,pests_mn) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_mn)
 
 sum_df_95 <- sum_df %>%
-  dplyr::select(n_traps,step_size,lure_attract,same_spot,cat_ftw1,pests_95) %>%
+  dplyr::select(n_traps,step_size,lure_attract,cat_ftw1,pests_95) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_95)
 
 sum_df_99 <- sum_df %>%
-  dplyr::select(n_traps,step_size,lure_attract,same_spot,cat_ftw1,pests_99) %>%
+  dplyr::select(n_traps,step_size,lure_attract,cat_ftw1,pests_99) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_99)
 
 sum_df_clust_mn <- sum_df_clust %>%
@@ -337,7 +305,7 @@ sum_df_v2 <- res_df %>%
   summarise(pests_mn = mean(num_pests),
             pests_95 = quantile(num_pests,.95),
             pests_99 = quantile(num_pests,.99),
-            .by = c(n_traps,lure_attract,same_spot,cat_ftw1))
+            .by = c(n_traps,lure_attract,cat_ftw1))
 
 
 sum_df_clust_v2 <- res_df_clust %>%
@@ -349,15 +317,15 @@ sum_df_clust_v2 <- res_df_clust %>%
 
 
 sum_df_mn_v2 <- sum_df_v2 %>%
-  dplyr::select(n_traps,lure_attract,same_spot,cat_ftw1,pests_mn) %>%
+  dplyr::select(n_traps,lure_attract,cat_ftw1,pests_mn) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_mn)
 
 sum_df_95_v2  <- sum_df_v2 %>%
-  dplyr::select(n_traps,lure_attract,same_spot,cat_ftw1,pests_95) %>%
+  dplyr::select(n_traps,lure_attract,cat_ftw1,pests_95) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_95)
 
 sum_df_99_v2  <- sum_df_v2 %>%
-  dplyr::select(n_traps,lure_attract,same_spot,cat_ftw1,pests_99) %>%
+  dplyr::select(n_traps,lure_attract,cat_ftw1,pests_99) %>%
   tidyr::pivot_wider(names_from = cat_ftw1, values_from = pests_99)
 
 sum_df_clust_mn_v2  <- sum_df_clust_v2 %>%
@@ -386,54 +354,3 @@ write.csv(sum_df_99_v2,file.path(tables_dir,"sum_df_99_v2.csv"))
 write.csv(sum_df_clust_mn_v2,file.path(tables_dir,"sum_df_clust_mn_v2.csv"))
 write.csv(sum_df_clust_95_v2,file.path(tables_dir,"sum_df_clust_95_v2.csv"))
 write.csv(sum_df_clust_99_v2,file.path(tables_dir,"sum_df_clust_99_v2.csv"))
-
-
-
-###################################################################################
-# Save a shiny app version
-#shiny_app_df <- res_df #[res_df$replication <= 100,]
-#shiny_app_df <- shiny_app_df[,!(names(shiny_app_df)%in%
-#                                  c("time1","time2","time3","time4",
-#                                    "ftw1","ftw2","ftw3","ftw4",
-#                                    "replication"))]
-#write.csv(shiny_app_df,"data/shiny_app_df.csv")
-
-
-
-
-####
-res_df_sub %>%
-  filter(same_spot == FALSE,
-         #lure_attract == 14,
-         n_traps %in% c(1,5,10)) %>%#,
-         #step_size == 43) %>%
-  mutate(cat_ftw1 = as.factor(cat_ftw1)) %>%
-  mutate(lure_attract = as.factor(lure_attract)) %>%
-  mutate(step_size = as.factor(step_size)) %>%
-  ggplot(aes(y=cat_ftw1)) +
-  geom_density_ridges(aes(x=num_pests,fill = paste0(lure_attract))) +
-  facet_grid(n_traps ~ step_size)
-
-####
-res_df %>%
-  filter(same_spot == FALSE,
-         #lure_attract == 36,
-         #n_traps %in% c(1,6,10),
-         step_size > 5) %>%
-  #mutate(n_traps = as.factor(n_traps)) %>%
-  #group_by(num_pests,n_traps)%>%
-  summarise(ftw1_mn = mean(ftw1),
-            ftw1_lb = quantile(ftw1,.025),
-            ftw1_ub = quantile(ftw1,.975),
-            .by = c(num_pests, n_traps)) %>%
-  filter(num_pests %in% c(10))%>%#,50,100,500,1000)) %>%
-  mutate(num_pests = as.factor(num_pests)) %>%
-  #ggplot(aes(x=num_pests,color=n_traps,fill=n_traps)) +
-  ggplot(aes(x=n_traps)) +
-  geom_line(aes(y = ftw1_mn, color = num_pests)) +
-  geom_ribbon(aes(ymin=ftw1_lb,ymax=ftw1_ub, fill = num_pests, color = num_pests),
-              alpha=.2)
-
-
-
-
