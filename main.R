@@ -1,3 +1,8 @@
+### Author: D. Gladish
+### Note: This script is intended to run on an HPC cluster with associated
+### flags as dictated the Model Runs section.  Scenarios need to be initiated
+### first via 'generate_scenarios()' function.
+
 hpc_ind <- as.numeric(commandArgs(trailingOnly = TRUE))
 
 ############
@@ -19,9 +24,9 @@ invisible(sapply(list.files(func_dir, "\\.[Rr]$", full.names = TRUE),
 # Install and load packages
 load_my_packages()
 
-############
-# Analysis #
-############
+##############
+# Model Runs #
+##############
 
 # Flags
 generate_new_scenarios <- FALSE
