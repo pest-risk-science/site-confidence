@@ -13,6 +13,8 @@ library(ggplot2)
 library(ggridges)
 library(ggpubr)
 library(khroma)
+library(patchwork)
+library(tidyverse)
 
 # Directories
 root_dir <- getwd()
@@ -102,9 +104,9 @@ ggsave(filename = file.path(figures_dir, "rf_plot.png"), width = 10, height = 8)
 # Figure S4
 step_size_df <- res_df %>%
   filter(n_traps == 3,
-         lure_attract == 14,
-         same_spot == FALSE,
-         attract_area == FALSE) %>%
+         lure_attract == 14) %>% #,
+         #same_spot == FALSE,
+         #attract_area == FALSE) %>%
   dplyr::select(num_pests,step_size,ftw1,cat_ftw1) %>%
   dplyr::mutate(pests_per_ha = num_pests/10)
 
@@ -195,8 +197,8 @@ ggsave(filename = file.path(figures_dir, "step_size_plot.png"), width = 10, heig
 ########################
 
 trap_df <- res_df %>%
-  filter(same_spot == FALSE,
-         attract_area == FALSE) %>%
+  #filter(same_spot == FALSE,
+  #       attract_area == FALSE) %>%
   dplyr::select(num_pests, n_traps, step_size, lure_attract, ftw1, cat_ftw1) %>%
   dplyr::mutate(pests_per_ha = num_pests/10)
 
@@ -442,3 +444,142 @@ t5 <- trap_df %>%
 
 
 
+
+
+######################
+
+
+######################
+# Graphical Abstract #
+######################
+
+
+# ── Colour palette ────────────────────────────────────────────────────────────
+bright_cols <- colour("bright")(7)
+
+ga_lure_vals    <- c(14, 25, 36)
+ga_lure_colours <- setNames(bright_cols[c(1, 4, 2)], as.character(ga_lure_vals))
+ga_lure_labels  <- setNames(paste0("1/\u03bb = ", ga_lure_vals),
+                             as.character(ga_lure_vals))
+ga_ptw_levels   <- c("Negligible", "Low", "Moderate", "High")
+GA_OFFSET <- 0.1
+ga_breaks  <- log10(c(0.1, 1.1, 10.1, 100.1))   # axis break positions for 0,1,10,100
+ga_labels  <- c("0", "1", "10", "100")
+
+ga_recode_ptw <- function(x) {
+  factor(case_when(
+    x %in% c("very low", "low") ~ "Low",
+    x == "negligible"           ~ "Negligible",
+    x == "moderate"             ~ "Moderate",
+    x == "high"                 ~ "High"
+  ), levels = ga_ptw_levels)
+}
+
+
+ga_cont_df <- trap_df  %>%
+  filter(lure_attract %in% ga_lure_vals, n_traps %in% c(1, 10),
+         num_pests >= 0)  %>%
+  group_by(pests_per_ha, lure_attract, n_traps) %>%
+  summarise(ftw_mn = mean(ftw1),
+            ftw_lb = quantile(ftw1, 0.05),
+            ftw_ub = quantile(ftw1, 0.95),
+            .groups = "drop")  %>%
+  mutate(lure_f  = factor(lure_attract, levels = ga_lure_vals),
+         traps_f = factor(n_traps, levels = c(1, 10),
+                          labels = c("1 trap", "10 traps")))
+
+
+ga_ridge_data <- bind_rows(
+  lapply(ga_lure_vals, function(lv) {
+    bind_rows(
+      trap_df  %>%
+        filter(ftw1 <= 100,
+               n_traps %in% c(1, 10), lure_attract == lv)  %>%
+        mutate(scenario = "Random"),
+      res_df_clust  %>%
+        filter(ftw1 <= 100,
+               n_traps %in% c(1, 10), lure_attract == lv, num_clust == 3)  %>%
+        mutate(pests_per_ha = num_pests / 10, scenario = "Clustered")
+    )  %>% mutate(lure_val = lv)
+  })
+)  %>%
+  mutate(log_pests = log10(pests_per_ha + GA_OFFSET),
+         cat_ptw   = ga_recode_ptw(cat_ftw1),
+         lure_f    = factor(lure_val, levels = ga_lure_vals),
+         trap_lab  = paste0(n_traps, ifelse(n_traps == 1, " trap", " traps")),
+         panel_lab = factor(paste0(scenario, "\n", trap_lab),
+                            levels = c("Random\n1 trap",    "Clustered\n1 trap",
+                                       "Random\n10 traps",  "Clustered\n10 traps")))  %>%
+  drop_na(cat_ptw)  %>%
+  group_by(panel_lab, lure_f, cat_ptw)  %>%
+  group_modify(~slice_sample(.x, n = min(nrow(.x), 3000)))  %>%
+  ungroup()
+
+ga_cont <- ggplot(ga_cont_df,
+    aes(x = pests_per_ha, y = ftw_mn, colour = lure_f, fill = lure_f)) +
+  geom_ribbon(aes(ymin = ftw_lb, ymax = ftw_ub), alpha = 0.18, colour = NA) +
+  geom_line(linewidth = 0.9) +
+  facet_wrap(~traps_f, ncol = 1) +
+  scale_colour_manual(values = ga_lure_colours, labels = ga_lure_labels,
+                      name = "Lure attractiveness (1/\u03bb)") +
+  scale_fill_manual(  values = ga_lure_colours, labels = ga_lure_labels,
+                      name = "Lure attractiveness (1/\u03bb)") +
+  scale_x_continuous(name = "Pests per hectare", limits = c(0, 100)) +
+  scale_y_continuous(name = "Pests per trap per week") +
+  coord_cartesian(ylim = c(0, 100)) +
+  guides(colour = guide_legend(override.aes = list(linewidth = 1.4, fill = NA)),
+         fill   = "none") +
+  theme_bw(base_size = 9) +
+  theme(panel.grid.minor = element_blank(),
+        strip.background = element_rect(fill = "grey20"),
+        strip.text       = element_text(colour = "white", face = "bold", size = 8),
+        axis.title       = element_text(face = "bold", size = 8),
+        axis.text        = element_text(size = 7))
+
+
+ga_ridge <- ggplot(ga_ridge_data,
+    aes(x = log_pests, y = cat_ptw, fill = lure_f,
+        group = interaction(cat_ptw, lure_f))) +
+  geom_density_ridges(
+    alpha          = 0.55,
+    scale          = 0.85,
+    rel_min_height = 0.005,
+    bandwidth      = 0.15,
+    colour         = "grey40",
+    linewidth      = 0.2,
+    jittered_points = TRUE,
+    point_size     = 0.15,
+    point_alpha    = 0.06,
+    position       = position_points_jitter(width = 0.01, height = 0)
+  ) +
+  facet_wrap(~panel_lab, nrow = 2, ncol = 2) +
+  scale_fill_manual(values = ga_lure_colours, labels = ga_lure_labels,
+                    name = "Lure attractiveness (1/\u03bb)") +
+  scale_x_continuous(breaks = ga_breaks, labels = ga_labels,
+                     limits = c(log10(0.05), log10(150)),
+                     name   = "Pests per hectare") +
+  labs(y = "Pests per trap per week") +
+  guides(fill = "none") +
+  theme_bw(base_size = 9) +
+  theme(panel.grid.minor = element_blank(),
+        strip.background = element_rect(fill = "grey20"),
+        strip.text       = element_text(colour = "white", face = "bold", size = 7.5),
+        axis.title       = element_text(face = "bold", size = 8),
+        axis.text        = element_text(size = 7),
+        panel.spacing    = unit(0.2, "cm"),
+        plot.margin      = margin(t = 2, r = 5, b = 2, l = 2, unit = "pt"))
+
+ga_fig <- wrap_plots(ga_cont, ga_ridge, ncol = 2, widths = c(1, 2.4)) +
+  plot_layout(guides = "collect") &
+  theme(legend.position    = "bottom",
+        legend.justification = "center",
+        legend.title       = element_text(size = 7, face = "bold"),
+        legend.text        = element_text(size = 7),
+        legend.key.size    = unit(0.35, "cm"))
+
+ggsave(filename = file.path(figures_dir, "graphical_abstract.jpeg"),
+       plot     = ga_fig,
+       width    = (60 / 25.4) * 3,
+       height   = (50 / 25.4) * 3,
+       dpi      = 800,
+       quality  = 95)

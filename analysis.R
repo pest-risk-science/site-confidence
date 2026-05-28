@@ -64,10 +64,10 @@ if(create_df_clust) {
 
 
 # Legacy variables that need to be removed if in data
-if(c("same_spot","attract_area")%in%names(res_df)){
+if(c("same_spot")%in%names(res_df)){
   res_df <- res_df %>%
-    dplyr::select(-c("same_spot","attract_area"))
-  res_df_clust <- res_df_clust %>%
+    dplyr::filter(same_spot == FALSE,
+                  attract_area == FALSE) %>%
     dplyr::select(-c("same_spot","attract_area"))
 }
 
